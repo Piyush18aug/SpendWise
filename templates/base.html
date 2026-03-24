@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}SpendWise{% endblock %}</title>
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Custom Modern CSS -->
+    <link rel="stylesheet" href="{% static 'css/modern_ui.css' %}" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    {% if user.is_authenticated %}
+    <div class="app-container">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="brand-logo">
+          <i class="fa-solid fa-wallet"></i> SpendWise
+        </div>
+
+        <div class="nav flex-column">
+          <a
+            href="{% url 'dashboard' %}"
+            class="nav-link-modern {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+          >
+            <i class="fa-solid fa-chart-pie"></i> Dashboard
+          </a>
+          <a
+            href="{% url 'transaction_list' %}"
+            class="nav-link-modern {% if 'transaction' in request.resolver_match.url_name %}active{% endif %}"
+          >
+            <i class="fa-solid fa-list"></i> Transactions
+          </a>
+          <a
+            href="{% url 'goal_list' %}"
+            class="nav-link-modern {% if 'goal' in request.resolver_match.url_name %}active{% endif %}"
+          >
+            <i class="fa-solid fa-bullseye"></i> Goals
+          </a>
+          <a
+            href="{% url 'spending_awareness' %}"
+            class="nav-link-modern {% if 'awareness' in request.resolver_match.url_name %}active{% endif %}"
+          >
+            <i class="fa-solid fa-lightbulb"></i> Awareness
+          </a>
+        </div>
+
+        <div class="mt-auto">
+          <a href="{% url 'logout' %}" class="nav-link-modern text-danger">
+            <i class="fa-solid fa-sign-out-alt"></i> Logout
+          </a>
+        </div>
+      </nav>
+
+      <!-- Top Navbar -->
+      <div class="top-navbar">
+        <button class="btn btn-outline-modern d-md-none" id="sidebarToggle">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <h4 class="m-0">{% block header_title %}Overview{% endblock %}</h4>
+        <div class="d-flex align-items-center gap-3">
+          <div class="dropdown">
+            <a
+              href="#"
+              class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark"
+              id="dropdownUser1"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <div
+                class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                style="width: 32px; height: 32px"
+              >
+                {{ user.username|make_list|first|upper }}
+              </div>
+              <span class="ms-2 d-none d-sm-inline">{{ user.username }}</span>
+            </a>
+            <ul
+              class="dropdown-menu dropdown-menu-end shadow-sm border-0"
+              aria-labelledby="dropdownUser1"
+            >
+              <li><a class="dropdown-item" href="#">Profile</a></li>
+              <li><a class="dropdown-item" href="#">Settings</a></li>
+              <li><hr class="dropdown-divider" /></li>
+              <li>
+                <a class="dropdown-item text-danger" href="{% url 'logout' %}"
+                  >Sign out</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        {% if messages %} {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags }} alert-dismissible fade show glass-card mb-4"
+          role="alert"
+        >
+          {{ message }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
+        </div>
+        {% endfor %} {% endif %} {% block content %}{% endblock %}
+      </main>
+    </div>
+    {% else %}
+    <!-- Layout for Non-Authenticated Users (Login/Register) -->
+    <div class="container py-5">
+      {% if messages %} {% for message in messages %}
+      <div
+        class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+      {% endfor %} {% endif %} {% block auth_content %}{% endblock %}
+    </div>
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Sidebar Toggle for Mobile
+      const sidebarToggle = document.getElementById("sidebarToggle");
+      const sidebar = document.querySelector(".sidebar");
+      if (sidebarToggle) {
+        sidebarToggle.addEventListener("click", () => {
+          sidebar.classList.toggle("active");
+        });
+      }
+    </script>
+  </body>
+</html>

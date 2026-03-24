@@ -1,0 +1,49 @@
+{% extends 'base.html' %} 
+{% block title %}Add Goal - SpendWise{% endblock %} 
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="glass-card animate-fade-in">
+      <h3 class="mb-4 fw-bold">Add Goal</h3>
+      <form method="post">
+        {% csrf_token %} 
+        
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+                {{ error }}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label text-muted small fw-bold"
+            >{{ field.label }}</label
+          >
+          {{ field }} {% if field.help_text %}
+          <small class="form-text text-muted">{{ field.help_text }}</small>
+          {% endif %} {% for error in field.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="submit" class="btn btn-primary-modern flex-grow-1">
+            <i class="fa-solid fa-save"></i> Save Goal
+          </button>
+          <a href="{% url 'goal_list' %}" class="btn btn-outline-modern"
+            >Cancel</a
+          >
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  document.querySelectorAll("input, select, textarea").forEach((input) => {
+    input.classList.add("form-control-modern");
+  });
+</script>
+{% endblock %}

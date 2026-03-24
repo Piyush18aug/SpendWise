@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Login - SpendWise{% endblock %}
+{% block auth_content %}
+<div
+  class="row justify-content-center align-items-center"
+  style="min-height: 80vh"
+>
+  <div class="col-md-5 col-lg-4">
+    <div class="glass-card animate-fade-in">
+      <div class="text-center mb-4">
+        <h2 class="text-gradient fw-bold">Welcome Back</h2>
+        <p class="text-muted">Login to manage your finances</p>
+      </div>
+
+      <form method="post">
+        {% csrf_token %} {% if form.errors %}
+        <div class="alert alert-danger">
+          <strong>Error:</strong> Please check your credentials.
+        </div>
+        {% endif %}
+
+        <div class="mb-3">
+          <label class="form-label text-muted small fw-bold">Username</label>
+          <input
+            type="text"
+            name="username"
+            class="form-control-modern"
+            placeholder="Enter username"
+            required
+            value="{{ form.username.value|default:'' }}"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label text-muted small fw-bold">Password</label>
+          <input
+            type="password"
+            name="password"
+            class="form-control-modern"
+            placeholder="Enter password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="btn btn-primary-modern w-100 mb-3">
+          Login <i class="fa-solid fa-arrow-right"></i>
+        </button>
+
+        <div class="text-center">
+          <a href="#" class="small text-muted">Forgot Password?</a>
+          <hr class="my-3 border-glass" />
+          <p class="small text-muted">
+            Don't have an account?
+            <a href="{% url 'register' %}" class="fw-bold text-primary"
+              >Sign up</a
+            >
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

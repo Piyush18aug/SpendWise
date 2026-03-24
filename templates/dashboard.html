@@ -1,0 +1,198 @@
+{% extends 'base.html' %} {% block title %}Dashboard - SpendWise{% endblock %}
+{% block header_title %}Financial Dashboard{% endblock %} {% block content %}
+
+{% if total_expenses > total_income %}
+<div class="alert alert-danger d-flex align-items-center mb-4 border-0 shadow-sm animate-fade-in" role="alert" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; backdrop-filter: blur(10px);">
+  <i class="fa-solid fa-triangle-exclamation fa-lg me-3"></i>
+  <div>
+    <h6 class="fw-bold mb-0">Spending Alert</h6>
+    <span class="small">Your expenses (₹{{ total_expenses }}) are higher than your income (₹{{ total_income }}). Consider cutting back on non-essential spending.</span>
+  </div>
+</div>
+{% endif %}
+<!-- Summary Cards -->
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="glass-card bg-gradient-primary text-white h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-muted mb-1">Total Balance</p>
+          <h2 class="fw-bold mb-0">₹{{ balance }}</h2>
+        </div>
+        <div class="p-2 bg-white bg-opacity-25 rounded-circle">
+          <i class="fa-solid fa-wallet fa-lg"></i>
+        </div>
+      </div>
+      <div class="mt-3">
+        <span class="badge bg-white bg-opacity-25">+12% this month</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="glass-card h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-muted mb-1">Total Income</p>
+          <h3 class="fw-bold text-success mb-0">+₹{{ total_income }}</h3>
+        </div>
+        <div class="p-2 bg-success bg-opacity-10 rounded-circle text-success">
+          <i class="fa-solid fa-arrow-trend-up fa-lg"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="glass-card h-100">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <p class="text-muted mb-1">Total Expenses</p>
+          <h3 class="fw-bold text-danger mb-0">-₹{{ total_expenses }}</h3>
+        </div>
+        <div class="p-2 bg-danger bg-opacity-10 rounded-circle text-danger">
+          <i class="fa-solid fa-arrow-trend-down fa-lg"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="glass-card h-100">
+      <h5 class="mb-4">Income vs Expenses</h5>
+      <div style="position: relative; height: 300px">
+        <canvas id="incomeExpenseChart"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="glass-card h-100">
+      <h5 class="mb-4">Spending by Category</h5>
+      <div style="position: relative; height: 300px">
+        <canvas id="categoryChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Actions & Recent Transactions -->
+<div class="row">
+  <div class="col-md-12">
+    <div class="glass-card">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="m-0">Recent Transactions</h5>
+        <a href="{% url 'add_transaction' %}" class="btn btn-primary-modern">
+          <i class="fa-solid fa-plus"></i> Add New
+        </a>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table-modern">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Note</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if transactions %} {% for t in transactions %}
+            <tr>
+              <td>{{ t.date }}</td>
+              <td>
+                <span class="d-flex align-items-center gap-2">
+                  <i class="fa-solid fa-tag text-muted"></i> {{ t.category }}
+                </span>
+              </td>
+              <td>{{ t.notes|default:"-" }}</td>
+              <td
+                class="fw-bold {% if t.type == 'Income' %}text-success{% else %}text-danger{% endif %}"
+              >
+                {% if t.type == 'Income' %}+{% else %}-{% endif %}₹{{ t.amount }}
+              </td>
+              <td>
+                <span
+                  class="badge-modern {% if t.type == 'Income' %}badge-success{% else %}badge-danger{% endif %}"
+                >
+                  {{ t.type }}
+                </span>
+              </td>
+            </tr>
+            {% endfor %} {% else %}
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                No recent transactions
+              </td>
+            </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Data passed from views -->
+{{ income_vs_expense_labels|json_script:"income-expense-labels" }}
+{{ income_vs_expense_data|json_script:"income-expense-data" }}
+{{ category_labels|json_script:"category-labels" }}
+{{ category_data|json_script:"category-data" }}
+
+<script>
+  // Parse data safely from JSON scripts
+  const incomeExpenseLabels = JSON.parse(document.getElementById('income-expense-labels').textContent);
+  const incomeExpenseData = JSON.parse(document.getElementById('income-expense-data').textContent);
+  const categoryLabels = JSON.parse(document.getElementById('category-labels').textContent);
+  const categoryData = JSON.parse(document.getElementById('category-data').textContent);
+
+  // Income vs Expense Chart
+  const ctx1 = document.getElementById('incomeExpenseChart').getContext('2d');
+  new Chart(ctx1, {
+      type: 'bar',
+      data: {
+          labels: incomeExpenseLabels,
+          datasets: [{
+              label: 'Amount',
+              data: incomeExpenseData,
+              backgroundColor: ['#10B981', '#EF4444'],
+              borderRadius: 8,
+              barThickness: 40
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+              y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+              x: { grid: { display: false } }
+          }
+      }
+  });
+
+  // Category Chart
+  const ctx2 = document.getElementById('categoryChart').getContext('2d');
+  new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+          labels: categoryLabels,
+          datasets: [{
+              data: categoryData,
+              backgroundColor: ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'],
+              borderWidth: 0
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+              legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+          },
+          cutout: '70%'
+      }
+  });
+</script>
+{% endblock %}

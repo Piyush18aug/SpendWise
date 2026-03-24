@@ -1,0 +1,76 @@
+{% extends 'base.html' %} 
+{% block title %}Goals - SpendWise{% endblock %} 
+{% block content %}
+<div class="glass-card mb-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2 class="m-0">Goals</h2>
+    <a href="{% url 'add_goal' %}" class="btn btn-primary-modern">
+      <i class="fa-solid fa-plus"></i> Add Goal
+    </a>
+  </div>
+</div>
+
+<div class="row">
+  {% for goal in goals %}
+  <div class="col-md-4 mb-4">
+    <div class="glass-card h-100">
+      <div class="card-body">
+        <h5 class="card-title fw-bold mb-3">{{ goal.title }}</h5>
+        <div class="d-flex justify-content-between text-muted small mb-2">
+          <span>Target: ${{ goal.target_amount }}</span>
+          <span>Current: ${{ goal.current_amount }}</span>
+        </div>
+
+        <div class="progress mb-3" style="height: 10px; border-radius: 5px">
+          <div
+            class="progress-bar {% if goal.is_completed %}bg-success{% else %}bg-primary{% endif %}"
+            role="progressbar"
+            style="{{ goal.progress_bar_style }}"
+            aria-valuenow="{{ goal.current_amount }}"
+            aria-valuemin="0"
+            aria-valuemax="{{ goal.target_amount }}"
+          ></div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+          <span
+            class="badge-modern {% if goal.is_completed %}badge-success{% else %}badge-warning{% endif %}"
+          >
+            {% if goal.is_completed %}Completed{% else %}In Progress{% endif %}
+          </span>
+
+          <div>
+            <a
+              href="{% url 'edit_goal' goal.pk %}"
+              class="btn btn-sm btn-outline-primary border-0"
+            >
+              <i class="fa-solid fa-pen"></i>
+            </a>
+            <form
+              method="post"
+              action="{% url 'delete_goal' goal.pk %}"
+              class="d-inline"
+              onsubmit="return confirm('Are you sure?');"
+            >
+              {% csrf_token %}
+              <button
+                type="submit"
+                class="btn btn-sm btn-outline-danger border-0"
+              >
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="glass-card text-center py-5">
+      <p class="text-muted mb-0">No goals found. Start by adding one!</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
