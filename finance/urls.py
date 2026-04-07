@@ -19,6 +19,9 @@ urlpatterns = [
     path('awareness/', views.spending_awareness, name='spending_awareness'),
     path('export/csv/', views.export_csv, name='export_csv'),
     path('export/pdf/', views.export_pdf, name='export_pdf'),
+    path('profile/', views.profile_view, name='profile'),
+    path('settings/', views.settings_view, name='settings'),
+    path('email-summary/', views.send_summary_email, name='send_summary_email'),
     
     # Custom Admin URLs
     path('custom-admin/login/', admin_views.admin_login, name='admin_login'),

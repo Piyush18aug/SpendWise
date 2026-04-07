@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profile - SpendWise{% endblock %}
+{% block header_title %}User Profile{% endblock %}
+
+{% block content %}
+<div class="row animate-fade-in">
+    <div class="col-lg-4">
+        <!-- Profile Summary Card -->
+        <div class="glass-card text-center mb-4 p-4">
+            <div class="position-relative d-inline-block mb-3">
+                {% if user.profile.profile_picture %}
+                    <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle img-fluid shadow-sm border border-3 border-primary" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto shadow-sm" style="width: 150px; height: 150px; font-size: 4rem;">
+                        {{ user.username|make_list|first|upper }}
+                    </div>
+                {% endif %}
+            </div>
+            <h3 class="mb-1">{{ user.get_full_name|default:user.username }}</h3>
+            <p class="text-muted"><i class="fa-solid fa-envelope me-2"></i>{{ user.email }}</p>
+            <div class="d-flex justify-content-center gap-2 mt-3">
+                <span class="badge bg-soft-primary text-primary px-3 py-2">
+                    <i class="fa-solid fa-calendar-days me-1"></i> Joined {{ user.date_joined|date:"M Y" }}
+                </span>
+            </div>
+            <hr class="my-4">
+            <div class="text-start">
+                <h6 class="text-uppercase small fw-bold text-muted mb-3">Bio</h6>
+                <p class="small text-secondary">{{ user.profile.bio|default:"No bio provided yet." }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Edit Profile Form -->
+        <div class="glass-card p-4">
+            <ul class="nav nav-pills mb-4" id="profileTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="personal-tab" data-bs-toggle="pill" data-bs-target="#personal" type="button" role="tab">Personal Info</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="account-tab" data-bs-toggle="pill" data-bs-target="#account" type="button" role="tab">Account Settings</button>
+                </li>
+            </ul>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="tab-content" id="profileTabsContent">
+                    <!-- Personal Info Tab -->
+                    <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-6 text-start">
+                                <label class="form-label fw-bold">First Name</label>
+                                <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+                            </div>
+                            <div class="col-md-6 text-start">
+                                <label class="form-label fw-bold">Last Name</label>
+                                <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+                            </div>
+                            <div class="col-md-12 text-start">
+                                <label class="form-label fw-bold">Phone Number</label>
+                                <input type="text" name="phone_number" class="form-control" value="{{ user.profile.phone_number }}">
+                            </div>
+                            <div class="col-md-12 text-start">
+                                <label class="form-label fw-bold">Bio</label>
+                                <textarea name="bio" class="form-control" rows="3">{{ user.profile.bio }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Setting Tab -->
+                    <div class="tab-pane fade" id="account" role="tabpanel">
+                        <div class="row g-3">
+                            <div class="col-md-12 text-start">
+                                <label class="form-label fw-bold">Username</label>
+                                <input type="text" name="username" class="form-control" value="{{ user.username }}">
+                            </div>
+                            <div class="col-md-12 text-start">
+                                <label class="form-label fw-bold">Email Address</label>
+                                <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                            </div>
+                            <div class="col-md-12 text-start">
+                                <label class="form-label fw-bold">Profile Picture</label>
+                                <input type="file" name="profile_picture" class="form-control">
+                                <small class="text-muted">Upload a new avatar. Current: {{ user.profile.profile_picture.name|default:"None" }}</small>
+                            </div>
+                            <div class="col-md-12 text-start">
+                                <label class="form-label fw-bold">Preferred Currency</label>
+                                <select name="currency" class="form-select">
+                                    {% for code, label in p_form.fields.currency.choices %}
+                                        <option value="{{ code }}" {% if user.profile.currency == code %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm">
+                        <i class="fa-solid fa-save me-2"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-soft-primary {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+    .form-control, .form-select {
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        border: 1px solid #e0e0e0;
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+    .form-control:focus, .form-select:focus {
+        background-color: #fff;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    }
+    .nav-pills .nav-link {
+        border-radius: 50px;
+        color: #6c757d;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        margin-right: 0.5rem;
+    }
+    .nav-pills .nav-link.active {
+        background-color: var(--bs-primary);
+        color: #fff;
+    }
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

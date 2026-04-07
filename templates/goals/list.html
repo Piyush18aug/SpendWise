@@ -17,8 +17,8 @@
       <div class="card-body">
         <h5 class="card-title fw-bold mb-3">{{ goal.title }}</h5>
         <div class="d-flex justify-content-between text-muted small mb-2">
-          <span>Target: ${{ goal.target_amount }}</span>
-          <span>Current: ${{ goal.current_amount }}</span>
+          <span>Target: {{ user.profile.currency_symbol }}{{ goal.target_amount }}</span>
+          <span>Current: {{ user.profile.currency_symbol }}{{ goal.current_amount }}</span>
         </div>
 
         <div class="progress mb-3" style="height: 10px; border-radius: 5px">

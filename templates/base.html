@@ -78,27 +78,25 @@
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              <div
-                class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                style="width: 32px; height: 32px"
-              >
-                {{ user.username|make_list|first|upper }}
-              </div>
-              <span class="ms-2 d-none d-sm-inline">{{ user.username }}</span>
-            </a>
-            <ul
-              class="dropdown-menu dropdown-menu-end shadow-sm border-0"
-              aria-labelledby="dropdownUser1"
-            >
-              <li><a class="dropdown-item" href="#">Profile</a></li>
-              <li><a class="dropdown-item" href="#">Settings</a></li>
-              <li><hr class="dropdown-divider" /></li>
-              <li>
-                <a class="dropdown-item text-danger" href="{% url 'logout' %}"
-                  >Sign out</a
-                >
-              </li>
-            </ul>
+            <div class="position-relative">
+              {% if user.profile.profile_picture %}
+                <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="rounded-circle shadow-sm" style="width: 32px; height: 32px; object-fit: cover;">
+              {% else %}
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px">
+                  {{ user.username|make_list|first|upper }}
+                </div>
+              {% endif %}
+            </div>
+            <span class="ms-2 d-none d-sm-inline">{{ user.username }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="dropdownUser1">
+            <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fa-solid fa-user me-2 small"></i> Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fa-solid fa-cog me-2 small"></i> Settings</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-sign-out-alt me-2 small"></i> Sign out</a>
+            </li>
+          </ul>
           </div>
         </div>
       </div>

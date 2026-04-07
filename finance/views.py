@@ -7,8 +7,90 @@ from reportlab.lib.pagesizes import letter
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import UserRegistrationForm, TransactionForm, GoalForm
-from .models import Transaction, Goal
+from .forms import UserRegistrationForm, TransactionForm, GoalForm, UserUpdateForm, UserProfileForm
+from .models import Transaction, Goal, UserProfile
+from django.core.mail import send_mail, EmailMessage
+from django.template.loader import render_to_string
+from django.conf import settings
+import io
+
+def send_welcome_email(user):
+    subject = 'Welcome to SpendWise!'
+    message = f'Hi {user.username},\n\nWelcome to SpendWise! Your account has been successfully created. We are excited to have you on board to manage your finances better.\n\nBest regards,\nThe SpendWise Team'
+    email_from = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [user.email]
+    send_mail(subject, message, email_from, recipient_list, fail_silently=False)
+
+@login_required
+def send_summary_email(request):
+    transactions = Transaction.objects.filter(user=request.user).order_by('-date')[:10]
+    total_income = sum(t.amount for t in transactions if t.type == 'Income')
+    total_expenses = sum(t.amount for t in transactions if t.type == 'Expense')
+    balance = total_income - total_expenses
+
+    subject = f'Your Financial Summary - {request.user.username}'
+    context = {
+        'user': request.user,
+        'transactions': transactions,
+        'total_income': total_income,
+        'total_expenses': total_expenses,
+        'balance': balance,
+        'currency_symbol': request.user.profile.currency_symbol
+    }
+    
+    html_message = render_to_string('emails/financial_summary.html', context)
+    
+    email = EmailMessage(
+        subject,
+        'Please view the attached summary.',
+        settings.DEFAULT_FROM_EMAIL,
+        [request.user.email],
+    )
+    email.content_subtype = "html"
+    email.body = html_message
+    
+    try:
+        email.send(fail_silently=False)
+        messages.success(request, 'Financial summary sent to your email!')
+    except Exception as e:
+        messages.warning(request, 'Successfully generated summary, but there was an issue sending the email. Please check your SendGrid configuration.')
+        
+    return redirect('dashboard')
+
+@login_required
+def profile_view(request):
+    if request.method == 'POST':
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = UserProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, 'Your profile has been updated!')
+            return redirect('profile')
+    else:
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = UserProfileForm(instance=request.user.profile)
+
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+    return render(request, 'profile.html', context)
+
+@login_required
+def settings_view(request):
+    # For now, settings mostly relates to the profile preferences (like currency)
+    # But we can expand it later.
+    if request.method == 'POST':
+        p_form = UserProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        if p_form.is_valid():
+            p_form.save()
+            messages.success(request, 'Settings updated!')
+            return redirect('settings')
+    else:
+        p_form = UserProfileForm(instance=request.user.profile)
+
+    return render(request, 'settings.html', {'p_form': p_form})
 
 def landing_page(request):
     if request.user.is_authenticated:
@@ -25,6 +107,7 @@ def register(request):
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
             user.save()
+            send_welcome_email(user)
             messages.success(request, 'Registration successful. You can now login.')
             return redirect('login')
     else:

@@ -13,11 +13,11 @@
     <div class="card h-100">
       <div class="card-header bg-info text-white">Spending Analysis</div>
       <div class="card-body">
-        <p><strong>Total Income:</strong> ₹{{ total_income }}</p>
-        <p><strong>Total Expenses:</strong> ₹{{ total_expenses }}</p>
+        <p><strong>Total Income:</strong> {{ user.profile.currency_symbol }}{{ total_income }}</p>
+        <p><strong>Total Expenses:</strong> {{ user.profile.currency_symbol }}{{ total_expenses }}</p>
         {% if top_spending_category %}
         <p>
-          <strong>Highest Spending Category:</strong> {{ top_spending_category.0 }} (${{ top_spending_category.1 }})
+          <strong>Highest Spending Category:</strong> {{ top_spending_category.0 }} ({{ user.profile.currency_symbol }}{{ top_spending_category.1 }})
         </p>
         {% endif %}
       </div>

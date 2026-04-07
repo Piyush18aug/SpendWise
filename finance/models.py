@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Transaction(models.Model):
     TRANSACTION_TYPES = (
@@ -43,3 +45,43 @@ class Goal(models.Model):
     @property
     def progress_bar_style(self):
         return f"width: {self.progress_percentage}%;"
+
+class UserProfile(models.Model):
+    CURRENCY_CHOICES = (
+        ('USD', 'US Dollar ($)'),
+        ('INR', 'Indian Rupee (₹)'),
+        ('EUR', 'Euro (€)'),
+        ('GBP', 'British Pound (£)'),
+    )
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    profile_picture = models.ImageField(upload_to='profile_pics/', default='profile_pics/default_avatar.png', blank=True)
+    bio = models.TextField(max_length=500, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True)
+    currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
+
+    @property
+    def currency_symbol(self):
+        symbols = {
+            'USD': '$',
+            'INR': '₹',
+            'EUR': '€',
+            'GBP': '£',
+        }
+        return symbols.get(self.currency, '$')
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    # Check if profile exists before saving
+    if hasattr(instance, 'profile'):
+        instance.profile.save()
+    else:
+        UserProfile.objects.create(user=instance)

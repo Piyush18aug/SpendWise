@@ -6,7 +6,7 @@
   <i class="fa-solid fa-triangle-exclamation fa-lg me-3"></i>
   <div>
     <h6 class="fw-bold mb-0">Spending Alert</h6>
-    <span class="small">Your expenses (₹{{ total_expenses }}) are higher than your income (₹{{ total_income }}). Consider cutting back on non-essential spending.</span>
+    <span class="small">Your expenses ({{ user.profile.currency_symbol }}{{ total_expenses }}) are higher than your income ({{ user.profile.currency_symbol }}{{ total_income }}). Consider cutting back on non-essential spending.</span>
   </div>
 </div>
 {% endif %}
@@ -17,7 +17,7 @@
       <div class="d-flex justify-content-between align-items-start">
         <div>
           <p class="text-muted mb-1">Total Balance</p>
-          <h2 class="fw-bold mb-0">₹{{ balance }}</h2>
+          <h2 class="fw-bold mb-0">{{ user.profile.currency_symbol }}{{ balance }}</h2>
         </div>
         <div class="p-2 bg-white bg-opacity-25 rounded-circle">
           <i class="fa-solid fa-wallet fa-lg"></i>
@@ -33,7 +33,7 @@
       <div class="d-flex justify-content-between align-items-start">
         <div>
           <p class="text-muted mb-1">Total Income</p>
-          <h3 class="fw-bold text-success mb-0">+₹{{ total_income }}</h3>
+          <h3 class="fw-bold text-success mb-0">+{{ user.profile.currency_symbol }}{{ total_income }}</h3>
         </div>
         <div class="p-2 bg-success bg-opacity-10 rounded-circle text-success">
           <i class="fa-solid fa-arrow-trend-up fa-lg"></i>
@@ -46,7 +46,7 @@
       <div class="d-flex justify-content-between align-items-start">
         <div>
           <p class="text-muted mb-1">Total Expenses</p>
-          <h3 class="fw-bold text-danger mb-0">-₹{{ total_expenses }}</h3>
+          <h3 class="fw-bold text-danger mb-0">-{{ user.profile.currency_symbol }}{{ total_expenses }}</h3>
         </div>
         <div class="p-2 bg-danger bg-opacity-10 rounded-circle text-danger">
           <i class="fa-solid fa-arrow-trend-down fa-lg"></i>
@@ -82,9 +82,14 @@
     <div class="glass-card">
       <div class="d-flex justify-content-between align-items-center mb-4">
         <h5 class="m-0">Recent Transactions</h5>
-        <a href="{% url 'add_transaction' %}" class="btn btn-primary-modern">
-          <i class="fa-solid fa-plus"></i> Add New
-        </a>
+        <div class="d-flex gap-2">
+          <a href="{% url 'send_summary_email' %}" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="fa-solid fa-envelope me-2"></i> Email My Summary
+          </a>
+          <a href="{% url 'add_transaction' %}" class="btn btn-primary-modern">
+            <i class="fa-solid fa-plus"></i> Add New
+          </a>
+        </div>
       </div>
 
       <div class="table-responsive">
@@ -111,7 +116,7 @@
               <td
                 class="fw-bold {% if t.type == 'Income' %}text-success{% else %}text-danger{% endif %}"
               >
-                {% if t.type == 'Income' %}+{% else %}-{% endif %}₹{{ t.amount }}
+                {% if t.type == 'Income' %}+{% else %}-{% endif %}{{ user.profile.currency_symbol }}{{ t.amount }}
               </td>
               <td>
                 <span

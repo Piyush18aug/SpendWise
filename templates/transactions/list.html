@@ -37,7 +37,7 @@
             </span>
           </td>
           <td>{{ transaction.category }}</td>
-          <td>${{ transaction.amount }}</td>
+          <td>{{ user.profile.currency_symbol }}{{ transaction.amount }}</td>
           <td>{{ transaction.notes }}</td>
           <td>
             <a

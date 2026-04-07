@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 12px; background-color: #ffffff; }
+        .header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #4F46E5; }
+        .header h1 { color: #4F46E5; margin: 0; }
+        .summary-box { display: flex; justify-content: space-between; margin: 20px 0; padding: 20px; background-color: #f9fafb; border-radius: 8px; }
+        .summary-item { text-align: center; flex: 1; }
+        .summary-item h3 { margin: 5px 0; color: #111827; }
+        .summary-item p { margin: 0; color: #6b7280; font-size: 0.875rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; background-color: #f3f4f6; padding: 12px; border-bottom: 1px solid #e5e7eb; }
+        td { padding: 12px; border-bottom: 1px solid #f3f4f6; }
+        .text-success { color: #10B981; font-weight: bold; }
+        .text-danger { color: #EF4444; font-weight: bold; }
+        .footer { text-align: center; margin-top: 30px; font-size: 0.75rem; color: #9ca3af; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SpendWise</h1>
+            <p>Your Financial Summary</p>
+        </div>
+        
+        <div class="summary-box">
+            <div class="summary-item">
+                <p>Balance</p>
+                <h3>{{ currency_symbol }}{{ balance }}</h3>
+            </div>
+            <div class="summary-item">
+                <p>Income</p>
+                <h3 class="text-success">+{{ currency_symbol }}{{ total_income }}</h3>
+            </div>
+            <div class="summary-item">
+                <p>Expenses</p>
+                <h3 class="text-danger">-{{ currency_symbol }}{{ total_expenses }}</h3>
+            </div>
+        </div>
+
+        <h3>Recent Transactions</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date }}</td>
+                    <td>{{ t.category }}</td>
+                    <td class="{% if t.type == 'Income' %}text-success{% else %}text-danger{% endif %}">
+                        {% if t.type == 'Income' %}+{% else %}-{% endif %}{{ currency_symbol }}{{ t.amount }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <p>&copy; 2026 SpendWise Team. All rights reserved.</p>
+            <p>You received this because you requested a summary from your dashboard.</p>
+        </div>
+    </div>
+</body>
+</html>

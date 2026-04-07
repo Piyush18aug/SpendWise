@@ -1,0 +1,167 @@
+Operations to perform:
+  Target specific migration: 0002_userprofile, from finance
+Running migrations:
+python : Traceback (most 
+recent call last):
+At line:1 char:1
++ python manage.py 
+migrate finance 0002 2>&1 
+| out-file -encoding 
+ascii ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (T  
+  raceback (most recent   
+  call last)::String)     
+[], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+  File "F:\MCA 
+project\MCA 1st sem projec
+t\SpendWise\manage.py", 
+line 22, in <module>
+    main()
+    ~~~~^^
+  File "F:\MCA 
+project\MCA 1st sem projec
+t\SpendWise\manage.py", 
+line 18, in main
+    execute_from_command_l
+ine(sys.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~
+~~~^^^^^^^^^^
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\core\management\
+__init__.py", line 442, 
+in 
+execute_from_command_line
+    utility.execute()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\core\management\
+__init__.py", line 436, 
+in execute
+    self.fetch_command(sub
+command).run_from_argv(sel
+f.argv)
+    ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~^^^^
+^^^^^^^
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\core\management\
+base.py", line 416, in 
+run_from_argv
+    self.execute(*args, 
+**cmd_options)
+    ~~~~~~~~~~~~^^^^^^^^^^
+^^^^^^^^^^^^
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\core\management\
+base.py", line 460, in 
+execute
+    output = 
+self.handle(*args, 
+**options)
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\core\management\
+base.py", line 107, in 
+wrapper
+    res = 
+handle_func(*args, 
+**kwargs)
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\core\management\
+commands\migrate.py", 
+line 353, in handle
+    post_migrate_state = 
+executor.migrate(
+        targets,
+    ...<3 lines>...
+        
+fake_initial=fake_initial,
+    )
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\db\migrations\ex
+ecutor.py", line 135, in 
+migrate
+    state = self._migrate_
+all_forwards(
+        state, plan, 
+full_plan, fake=fake, 
+fake_initial=fake_initial
+    )
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\db\migrations\ex
+ecutor.py", line 167, in 
+_migrate_all_forwards
+    state = 
+self.apply_migration(
+        state, migration, 
+fake=fake, 
+fake_initial=fake_initial
+    )
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\db\migrations\ex
+ecutor.py", line 252, in 
+apply_migration
+    with self.connection.s
+chema_editor(
+         ~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~^
+        
+atomic=migration.atomic
+        
+^^^^^^^^^^^^^^^^^^^^^^^
+    ) as schema_editor:
+    ^
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\db\backends\sqli
+te3\schema.py", line 39, 
+in __exit__
+    self.connection.check_
+constraints()
+    ~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~^^
+  File "C:\Users\navan\App
+Data\Local\Programs\Python
+\Python314\Lib\site-packag
+es\django\db\backends\sqli
+te3\base.py", line 304, 
+in check_constraints
+    raise IntegrityError(
+    ...<12 lines>...
+    )
+django.db.utils.IntegrityE
+rror: The row in table 
+'finance_transaction' 
+with primary key '1' has 
+an invalid foreign key: fi
+nance_transaction.user_id 
+contains a value '1' that 
+does not have a 
+corresponding value in 
+auth_user.id.
+  Applying finance.0002_userprofile...
