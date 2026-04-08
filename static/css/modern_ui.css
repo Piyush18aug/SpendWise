@@ -148,7 +148,7 @@ a:hover {
 .form-control-modern {
   width: 100%;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--bg-body);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
   font-size: 1rem;
@@ -159,7 +159,7 @@ a:hover {
 .form-control-modern:focus {
   outline: none;
   border-color: var(--primary);
-  background: white;
+  background: var(--bg-body);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
 }
 
@@ -286,6 +286,10 @@ a:hover {
   -webkit-text-fill-color: transparent;
 }
 
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
 .badge-modern {
   padding: 4px 12px;
   border-radius: 20px;
@@ -321,7 +325,7 @@ a:hover {
 }
 
 .table-modern td {
-  background: white;
+  background: var(--bg-glass);
   padding: 16px;
 }
 

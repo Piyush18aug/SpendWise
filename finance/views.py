@@ -12,6 +12,8 @@ from .models import Transaction, Goal, UserProfile
 from django.core.mail import send_mail, EmailMessage
 from django.template.loader import render_to_string
 from django.conf import settings
+from datetime import timedelta
+from django.utils.timezone import now
 import io
 
 def send_welcome_email(user):
@@ -143,6 +145,12 @@ def dashboard(request):
     total_expenses = sum(t.amount for t in transactions if t.type == 'Expense')
     balance = total_income - total_expenses
     
+    if total_income > 0:
+        health_percent = max(0, 100 - (total_expenses / total_income * 100))
+    else:
+        health_percent = 0 if total_expenses > 0 else 100
+    health_percent = int(health_percent)
+    
     # Data for charts
     income_vs_expense_labels = ['Income', 'Expense']
     income_vs_expense_data = [float(total_income), float(total_expenses)]
@@ -168,13 +176,35 @@ def dashboard(request):
         'income_vs_expense_data': income_vs_expense_data,
         'category_labels': category_labels,
         'category_data': category_data,
+        'health_percent': health_percent,
     }
     return render(request, 'dashboard.html', context)
 
 @login_required
 def transaction_list(request):
     transactions = Transaction.objects.filter(user=request.user).order_by('-date')
-    return render(request, 'transactions/list.html', {'transactions': transactions})
+    
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    
+    if year:
+        transactions = transactions.filter(date__year=year)
+    if month:
+        transactions = transactions.filter(date__month=month)
+        
+    filtered_income = sum(t.amount for t in transactions if t.type == 'Income')
+    filtered_expense = sum(t.amount for t in transactions if t.type == 'Expense')
+    filtered_balance = filtered_income - filtered_expense
+    
+    context = {
+        'transactions': transactions,
+        'selected_month': month,
+        'selected_year': year,
+        'filtered_income': filtered_income,
+        'filtered_expense': filtered_expense,
+        'filtered_balance': filtered_balance,
+    }
+    return render(request, 'transactions/list.html', context)
 
 @login_required
 def add_transaction(request):
@@ -289,15 +319,65 @@ def spending_awareness(request):
     
     if total_income > 0:
         expense_ratio = (total_expenses / total_income) * 100
-        if expense_ratio > 80:
-            alerts.append(f"Warning: You have spent {expense_ratio:.1f}% of your income!")
+        if expense_ratio >= 100:
+            alerts.append(
+                f"Critical Deficit: You have spent {expense_ratio:.1f}% of your income. You are currently operating at a financial deficit. "
+                "It is highly recommended to halt all non-essential spending immediately and review your top categories to identify the primary leaks in your budget."
+            )
+        elif expense_ratio > 80:
+            alerts.append(
+                f"High Risk Volume: Your expense ratio is currently at {expense_ratio:.1f}%. "
+                "You are spending a massive portion of your total income, leaving minimal room for emergency savings or future investments. "
+                "Consider strictly applying the 50/30/20 rule to cap your discretionary spending."
+            )
         elif expense_ratio > 50:
-            tips.append("You have spent over 50% of your income. Consider reviewing your budget.")
+            tips.append(
+                f"Moderate Expenditure: You have spent {expense_ratio:.1f}% of your income so far. "
+                "While you are operating safely within your limits, carefully review recurring subscriptions and dining habits to ensure "
+                "you can aggressively route at least 20% into savings."
+            )
         else:
-            tips.append("Great job! You are keeping your expenses low.")
+            tips.append(
+                f"Excellent Health: You are operating at an optimized {expense_ratio:.1f}% expense ratio. "
+                "By keeping your core expenses incredibly low, you have substantial excess capital available. "
+                "Consider routing this surplus towards high-yield investments or long-term financial goals."
+            )
+    else:
+        if total_expenses > 0:
+            alerts.append(
+                "Unbalanced Metrics: You are currently tracking active expenses without any logged incoming revenue. "
+                "This projects an immediate 100% deficit layout. Please log your primary income sources to unlock accurate financial health analytics."
+            )
     
     if top_spending_category:
-        tips.append(f"Your highest spending is in '{top_spending_category[0]}'. Try to reduce it if possible.")
+        cat_name = top_spending_category[0]
+        cat_amount = top_spending_category[1]
+        cat_percentage = (cat_amount / float(total_expenses) * 100) if total_expenses > 0 else 0
+        
+        tips.append(
+            f"Category Insight: '{cat_name}' is definitively your highest financial drain, making up an isolated {cat_percentage:.1f}% of all your tracked expenses. "
+            f"If you can consistently drop spending in this specific category by just 10%, you will passively save roughly {request.user.profile.currency_symbol}{round(cat_amount * 0.10, 2)} every single month. "
+            "Consider setting a strict, hard-capped modular budget targeting this sector."
+        )
+
+    # Timeline calculation for chart
+    thirty_days_ago = now().date() - timedelta(days=30)
+    recent_transactions = transactions.filter(date__gte=thirty_days_ago).order_by('date')
+    
+    timeline_dict = {}
+    for i in range(30, -1, -1):
+        d_str = (now().date() - timedelta(days=i)).strftime('%b %d')
+        timeline_dict[d_str] = 0.0
+
+    for t in recent_transactions:
+        if t.type == 'Expense':
+            d_str = t.date.strftime('%b %d')
+            if d_str in timeline_dict:
+                timeline_dict[d_str] += float(t.amount)
+    
+    top_spending_savings = 0
+    if top_spending_category:
+        top_spending_savings = round(top_spending_category[1] * 0.10, 2)
         
     context = {
         'total_income': total_income,
@@ -305,6 +385,9 @@ def spending_awareness(request):
         'top_spending_category': top_spending_category,
         'tips': tips,
         'alerts': alerts,
+        'timeline_labels': list(timeline_dict.keys()),
+        'timeline_data': list(timeline_dict.values()),
+        'top_spending_savings': top_spending_savings,
     }
     return render(request, 'awareness.html', context)
 

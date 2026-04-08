@@ -59,6 +59,7 @@ class UserProfile(models.Model):
     bio = models.TextField(max_length=500, blank=True)
     phone_number = models.CharField(max_length=15, blank=True)
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
+    theme = models.CharField(max_length=10, choices=[('light', 'Light'), ('dark', 'Dark')], default='dark')
 
     @property
     def currency_symbol(self):

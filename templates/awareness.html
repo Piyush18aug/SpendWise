@@ -1,56 +1,128 @@
 {% extends 'base.html' %}
 {% block title %}Smart Spending Awareness{% endblock %}
 {% block content %}
-<div class="row mb-4">
-  <div class="col-md-12">
-    <h2>Smart Spending Awareness</h2>
-    <p class="text-muted">Analyze your habits and get personalized tips.</p>
+<div class="row align-items-center mb-4">
+  <div class="col-md-8">
+    <h3 class="fw-bold mb-2">Smart Spending Analytics</h3>
+    <p class="text-muted mb-0" style="font-size: 1.05rem; opacity: 0.9;">
+      Welcome to your financial awareness hub. This intelligent module continuously analyzes your historical transaction data 
+      to generate customized, descriptive insights designed to guide you toward healthier financial distribution.
+    </p>
   </div>
 </div>
 
+<div class="row mb-4">
+  <!-- Chart Area -->
+  <div class="col-lg-8 mb-4 mb-lg-0">
+    <div class="glass-card h-100 p-0" style="overflow: hidden;">
+      <div class="p-3 border-bottom" style="border-width: 1px; border-color: var(--border-glass) !important;">
+        <h5 class="mb-0 fw-bold">Overview</h5>
+      </div>
+      <div class="p-4" style="position: relative; height: 350px;">
+        <canvas id="awarenessChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Savings Card -->
+  <div class="col-lg-4">
+    <div class="glass-card h-100 d-flex flex-column justify-content-center text-center text-white" 
+         style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none;">
+      <h1 class="display-4 fw-bold mb-2">{{ user.profile.currency_symbol }}{{ top_spending_savings|default:"0.00" }}</h1>
+      <p style="opacity: 0.9; font-weight: 500;">Potential Monthly Savings</p>
+      
+      <div class="mt-4 pt-3 border-top" style="border-color: rgba(255,255,255,0.2) !important;">
+        <p class="small mb-0" style="opacity: 0.9;">
+         {% if top_spending_category %}
+          Reducing your top category ("{{ top_spending_category.0 }}") by 10% could save you this much every month.
+         {% else %}
+          Track more spending to unlock personalized savings advice!
+         {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Row: Tips & Alerts -->
 <div class="row">
   <div class="col-md-6 mb-4">
-    <div class="card h-100">
-      <div class="card-header bg-info text-white">Spending Analysis</div>
-      <div class="card-body">
-        <p><strong>Total Income:</strong> {{ user.profile.currency_symbol }}{{ total_income }}</p>
-        <p><strong>Total Expenses:</strong> {{ user.profile.currency_symbol }}{{ total_expenses }}</p>
-        {% if top_spending_category %}
-        <p>
-          <strong>Highest Spending Category:</strong> {{ top_spending_category.0 }} ({{ user.profile.currency_symbol }}{{ top_spending_category.1 }})
-        </p>
-        {% endif %}
-      </div>
+    <div class="glass-card h-100" style="border: 1px solid rgba(16, 185, 129, 0.2);">
+      <h5 class="mb-4"><i class="fa-solid fa-lightbulb text-warning me-2"></i> Actionable Tips</h5>
+      
+      {% if tips %}
+        {% for tip in tips %}
+        <div class="p-3 rounded mb-3" style="background-color: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+          <h6 class="text-success fw-bold mb-2">Smart Move</h6>
+          <p class="mb-0" style="color: var(--text-main); line-height: 1.6; font-size: 0.95rem;">{{ tip }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted" style="line-height: 1.6; font-size: 0.95rem;">Keep tracking your expenses to generate detailed tactical tips!</p>
+      {% endif %}
     </div>
   </div>
 
   <div class="col-md-6 mb-4">
-    <div class="card h-100">
-      <div class="card-header bg-warning text-dark">Alerts & Tips</div>
-      <div class="card-body">
-        {% if alerts %}
-        <div class="alert alert-danger">
-          <h5 class="alert-heading">Alerts!</h5>
-          <ul class="mb-0">
-            {% for alert in alerts %}
-            <li>{{ alert }}</li>
-            {% endfor %}
-          </ul>
+    <div class="glass-card h-100" style="border: 1px solid rgba(239, 68, 68, 0.2);">
+      <h5 class="mb-4"><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> Critical Alerts</h5>
+      
+      {% if alerts %}
+        {% for alert in alerts %}
+        <div class="p-3 rounded mb-3" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
+          <h6 class="text-danger fw-bold mb-2">Critical Action Required</h6>
+          <p class="mb-0" style="color: var(--text-main); line-height: 1.6; font-size: 0.95rem;">{{ alert }}</p>
         </div>
-        {% endif %} {% if tips %}
-        <div class="alert alert-success">
-          <h5 class="alert-heading">Smart Tips</h5>
-          <ul class="mb-0">
-            {% for tip in tips %}
-            <li>{{ tip }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-        {% else %}
-        <p>No specific tips at the moment. Keep tracking!</p>
-        {% endif %}
+        {% endfor %}
+      {% else %}
+      <div class="p-3 rounded mb-3" style="background-color: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3);">
+        <p class="text-success mb-0 text-center" style="font-size: 0.95rem;">No critical alerts. Your spending distribution is looking incredibly healthy and safe!</p>
       </div>
+      {% endif %}
     </div>
   </div>
 </div>
+
+<!-- Chart Script -->
+{{ timeline_labels|json_script:"timeline-labels" }}
+{{ timeline_data|json_script:"timeline-data" }}
+<script>
+  const labels = JSON.parse(document.getElementById('timeline-labels').textContent);
+  const dataPoints = JSON.parse(document.getElementById('timeline-data').textContent);
+
+  const ctx = document.getElementById('awarenessChart').getContext('2d');
+  new Chart(ctx, {
+      type: 'line',
+      data: {
+          labels: labels,
+          datasets: [{
+              label: 'Daily Expenses',
+              data: dataPoints,
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              borderWidth: 2,
+              pointBackgroundColor: '#3b82f6',
+              pointRadius: 2,
+              fill: true,
+              tension: 0.4
+          }]
+      },
+      options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+              y: { 
+                  beginAtZero: true, 
+                  grid: { color: 'rgba(255,255,255,0.05)' },
+                  ticks: { color: '#9ca3af', callback: function(value) { return '{{ user.profile.currency_symbol }}' + value; } }
+              },
+              x: { 
+                  grid: { display: false },
+                  ticks: { color: '#9ca3af', maxRotation: 45, minRotation: 45 }
+              }
+          }
+      }
+  });
+</script>
 {% endblock %}

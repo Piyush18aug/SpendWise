@@ -1,41 +1,70 @@
 {% extends 'base.html' %} {% block title %}Dashboard - SpendWise{% endblock %}
 {% block header_title %}Financial Dashboard{% endblock %} {% block content %}
 
-{% if total_expenses > total_income %}
-<div class="alert alert-danger d-flex align-items-center mb-4 border-0 shadow-sm animate-fade-in" role="alert" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; backdrop-filter: blur(10px);">
-  <i class="fa-solid fa-triangle-exclamation fa-lg me-3"></i>
-  <div>
-    <h6 class="fw-bold mb-0">Spending Alert</h6>
-    <span class="small">Your expenses ({{ user.profile.currency_symbol }}{{ total_expenses }}) are higher than your income ({{ user.profile.currency_symbol }}{{ total_income }}). Consider cutting back on non-essential spending.</span>
+<!-- Intelligence Banner -->
+<div class="glass-card mb-4 p-3 d-flex align-items-center justify-content-between">
+  <div class="d-flex align-items-center gap-4">
+    <div class="text-center" style="min-width: 80px;">
+      <h6 class="mb-0" style="color: var(--text-muted); font-weight: 700; letter-spacing: 1px; font-size: 0.8rem;">HEALTH</h6>
+      <h2 class="mb-0" style="color: #0ea5e9;">{{ health_percent }}%</h2>
+    </div>
+    <div style="border-left: 1px solid var(--border-glass); height: 40px;"></div>
+    <div class="d-flex align-items-center gap-3">
+      {% if health_percent < 50 %}
+      <div class="bg-danger bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+        <i class="fa-solid fa-triangle-exclamation text-danger" style="font-size: 0.9rem;"></i>
+      </div>
+      {% else %}
+      <div class="bg-success bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+        <i class="fa-solid fa-check text-success" style="font-size: 0.9rem;"></i>
+      </div>
+      {% endif %}
+      <div>
+        <h6 class="mb-0 fw-bold">SpendWise Intelligence</h6>
+        <span style="color: var(--text-muted); font-size: 0.9rem;">
+            {% if total_expenses > total_income %}
+                Warning: You have spent over 100% of your income!
+            {% elif health_percent < 20 %}
+                Warning: You've spent over 80% of your income!
+            {% elif health_percent < 50 %}
+                Notice: You've spent over 50% of your income.
+            {% else %}
+                Good: Your spending is healthy relative to your income.
+            {% endif %}
+        </span>
+      </div>
+    </div>
   </div>
+  <a href="{% url 'spending_awareness' %}" class="btn btn-primary" style="background-color: #3b82f6; border-color: #3b82f6; border-radius: 8px; font-weight: 600; padding: 8px 20px;">
+    DEEP AWARENESS <i class="fa-solid fa-chevron-right ms-2" style="font-size: 0.8rem;"></i>
+  </a>
 </div>
-{% endif %}
 <!-- Summary Cards -->
 <div class="row mb-4">
   <div class="col-md-4">
-    <div class="glass-card bg-gradient-primary text-white h-100">
-      <div class="d-flex justify-content-between align-items-start">
+    <div class="glass-card h-100 text-white" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none;">
+      <div class="d-flex justify-content-between align-items-center">
         <div>
-          <p class="text-muted mb-1">Total Balance</p>
-          <h2 class="fw-bold mb-0">{{ user.profile.currency_symbol }}{{ balance }}</h2>
+          <p class="mb-1" style="opacity: 0.9; font-weight: 500;">Total Balance</p>
+          <h2 class="fw-bold mb-0 text-white">{{ user.profile.currency_symbol }}{{ balance }}</h2>
         </div>
-        <div class="p-2 bg-white bg-opacity-25 rounded-circle">
-          <i class="fa-solid fa-wallet fa-lg"></i>
+        <div class="p-3 bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
+          <i class="fa-solid fa-wallet fa-xl text-white"></i>
         </div>
       </div>
-      <div class="mt-3">
-        <span class="badge bg-white bg-opacity-25">+12% this month</span>
+      <div class="mt-4 pt-2">
+        <span class="badge bg-white bg-opacity-25 py-2 px-3">+12% this month</span>
       </div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="glass-card h-100">
-      <div class="d-flex justify-content-between align-items-start">
+      <div class="d-flex justify-content-between align-items-center">
         <div>
-          <p class="text-muted mb-1">Total Income</p>
+          <p class="mb-1" style="color: var(--text-muted); font-weight: 500;">Total Income</p>
           <h3 class="fw-bold text-success mb-0">+{{ user.profile.currency_symbol }}{{ total_income }}</h3>
         </div>
-        <div class="p-2 bg-success bg-opacity-10 rounded-circle text-success">
+        <div class="p-3 bg-success bg-opacity-10 rounded-circle text-success d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
           <i class="fa-solid fa-arrow-trend-up fa-lg"></i>
         </div>
       </div>
@@ -43,12 +72,12 @@
   </div>
   <div class="col-md-4">
     <div class="glass-card h-100">
-      <div class="d-flex justify-content-between align-items-start">
+      <div class="d-flex justify-content-between align-items-center">
         <div>
-          <p class="text-muted mb-1">Total Expenses</p>
+          <p class="mb-1" style="color: var(--text-muted); font-weight: 500;">Total Expenses</p>
           <h3 class="fw-bold text-danger mb-0">-{{ user.profile.currency_symbol }}{{ total_expenses }}</h3>
         </div>
-        <div class="p-2 bg-danger bg-opacity-10 rounded-circle text-danger">
+        <div class="p-3 bg-danger bg-opacity-10 rounded-circle text-danger d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
           <i class="fa-solid fa-arrow-trend-down fa-lg"></i>
         </div>
       </div>
