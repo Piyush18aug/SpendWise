@@ -3,3 +3,4 @@ gunicorn==21.2.0
 pymysql
 reportlab
 python-dotenv==1.0.1
+whitenoise==6.6.0
