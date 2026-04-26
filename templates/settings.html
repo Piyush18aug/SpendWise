@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Settings - SpendWise{% endblock %}
+{% block title %}Settings - SpendWiseWeb{% endblock %}
 {% block header_title %}Preferences{% endblock %}
 
 {% block content %}
@@ -37,16 +37,6 @@
                     <small class="text-muted">Notification settings are temporarily locked for system updates.</small>
                 </div>
 
-                <hr class="my-4">
-                
-                <div class="mb-4 text-start">
-                    <label class="form-label fw-bold">Appearance</label>
-                    <input type="hidden" name="theme" id="themeInput" value="{{ user.profile.theme|default:'dark' }}">
-                    <div class="d-flex gap-3 mt-2">
-                        <div class="theme-option {% if user.profile.theme == 'light' %}active{% endif %}" data-value="light" style="background: #f8f9fa; border: {% if user.profile.theme == 'light' %}2px solid var(--bs-primary){% else %}1px solid #dee2e6{% endif %}; height: 40px; width: 60px; border-radius: 5px;" title="Light Mode"></div>
-                        <div class="theme-option {% if user.profile.theme == 'dark' or not user.profile.theme %}active{% endif %}" data-value="dark" style="background: #212529; border: {% if user.profile.theme == 'dark' or not user.profile.theme %}2px solid var(--bs-primary){% else %}1px solid #dee2e6{% endif %}; height: 40px; width: 60px; border-radius: 5px;" title="Dark Mode"></div>
-                    </div>
-                </div>
 
                 <div class="d-flex justify-content-end mt-5">
                     <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill">
@@ -66,32 +56,5 @@
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    .theme-option {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-    .theme-option:hover {
-        transform: scale(1.05);
-    }
-    .border-radius-10 {
-        border-radius: 10px;
-    }
 </style>
-
-<script>
-    document.querySelectorAll('.theme-option').forEach(el => {
-        el.addEventListener('click', function() {
-            document.querySelectorAll('.theme-option').forEach(opt => {
-                opt.style.border = '1px solid #dee2e6';
-                opt.classList.remove('active');
-            });
-            this.style.border = '2px solid var(--bs-primary)';
-            this.classList.add('active');
-            document.getElementById('themeInput').value = this.dataset.value;
-            
-            // Preview instantly
-            document.body.setAttribute('data-theme', this.dataset.value);
-        });
-    });
-</script>
 {% endblock %}

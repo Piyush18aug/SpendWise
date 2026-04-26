@@ -21,13 +21,13 @@ ascii ...
  
   File "F:\MCA 
 project\MCA 1st sem projec
-t\SpendWise\manage.py", 
+t\SpendWiseWeb\manage.py", 
 line 22, in <module>
     main()
     ~~~~^^
   File "F:\MCA 
 project\MCA 1st sem projec
-t\SpendWise\manage.py", 
+t\SpendWiseWeb\manage.py", 
 line 18, in main
     execute_from_command_l
 ine(sys.argv)

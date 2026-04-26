@@ -94,7 +94,7 @@ def admin_export_pdf(request):
     width, height = letter
     
     p.setFont("Helvetica-Bold", 16)
-    p.drawString(50, height - 50, "SpendWise System Report")
+    p.drawString(50, height - 50, "SpendWiseWeb System Report")
     
     total_users = User.objects.count()
     total_transactions = Transaction.objects.count()

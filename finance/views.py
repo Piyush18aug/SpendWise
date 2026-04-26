@@ -15,13 +15,59 @@ from django.conf import settings
 from datetime import timedelta
 from django.utils.timezone import now
 import io
+import json
+from django.db.models import Count
+
+def get_category_context(user):
+    categories_data = {
+        'Expense': {
+            'Basic Needs': ['Food & Dining 🍽️', 'Groceries 🛒', 'Rent 🏠', 'Utilities 💡', 'Internet / Mobile Recharge 📱'],
+            'Lifestyle & Travel': ['Travel / Transport ✈️', 'Fuel ⛽', 'Public Transport 🚌', 'Cab / Auto 🚕'],
+            'Personal & Shopping': ['Shopping 🛍️', 'Clothing 👕', 'Beauty & Care 💄', 'Gadgets 💻'],
+            'Entertainment': ['Movies 🎬', 'Subscriptions 📺', 'Games 🎮'],
+            'Health': ['Medical 🏥', 'Pharmacy 💊', 'Insurance 🛡️'],
+            'Education': ['Books 📚', 'Courses 🎓', 'Fees 📝'],
+            'Others': ['Gifts 🎁', 'Donations 🤝', 'Miscellaneous 📦']
+        },
+        'Income': {
+            'Primary Income': ['Salary 💼', 'Business Income 🏢'],
+            'Side Income': ['Freelancing 👨‍💻', 'Part-time Job ⏱️', 'Consulting 🤝'],
+            'Passive Income': ['Investments 📈', 'Dividends 💰', 'Interest 🏦'],
+            'Extra Income': ['Bonus 🎊', 'Gifts Received 🧧', 'Refunds 💸']
+        }
+    }
+    
+    frequent_categories = list(Transaction.objects.filter(user=user)
+                               .values('category', 'type')
+                               .annotate(count=Count('id'))
+                               .order_by('-count')[:4])
+                               
+    recent_qs = Transaction.objects.filter(user=user).order_by('-date', '-id')[:20]
+    recent_categories = []
+    seen = set()
+    for t in recent_qs:
+        key = (t.category, t.type)
+        if key not in seen:
+            seen.add(key)
+            recent_categories.append({'category': t.category, 'type': t.type})
+            if len(recent_categories) >= 4:
+                break
+                
+    return {
+        'categories_json': json.dumps(categories_data),
+        'frequent_categories_json': json.dumps(frequent_categories),
+        'recent_categories_json': json.dumps(recent_categories),
+    }
 
 def send_welcome_email(user):
-    subject = 'Welcome to SpendWise!'
-    message = f'Hi {user.username},\n\nWelcome to SpendWise! Your account has been successfully created. We are excited to have you on board to manage your finances better.\n\nBest regards,\nThe SpendWise Team'
+    subject = 'Welcome to SpendWiseWeb!'
+    message = f'Hi {user.username},\n\nWelcome to SpendWiseWeb! Your account has been successfully created. We are excited to have you on board to manage your finances better.\n\nBest regards,\nThe SpendWiseWeb Team'
     email_from = settings.DEFAULT_FROM_EMAIL
     recipient_list = [user.email]
-    send_mail(subject, message, email_from, recipient_list, fail_silently=False)
+    try:
+        send_mail(subject, message, email_from, recipient_list, fail_silently=False)
+    except Exception:
+        pass  # Do not block registration if email fails
 
 @login_required
 def send_summary_email(request):
@@ -148,7 +194,7 @@ def dashboard(request):
     if total_income > 0:
         health_percent = max(0, 100 - (total_expenses / total_income * 100))
     else:
-        health_percent = 0 if total_expenses > 0 else 100
+        health_percent = 0
     health_percent = int(health_percent)
     
     # Data for charts
@@ -218,7 +264,10 @@ def add_transaction(request):
             return redirect('transaction_list')
     else:
         form = TransactionForm()
-    return render(request, 'transactions/add.html', {'form': form})
+    
+    context = {'form': form}
+    context.update(get_category_context(request.user))
+    return render(request, 'transactions/add.html', context)
 
 @login_required
 def edit_transaction(request, pk):
@@ -235,7 +284,10 @@ def edit_transaction(request, pk):
             return redirect('transaction_list')
     else:
         form = TransactionForm(instance=transaction)
-    return render(request, 'transactions/edit.html', {'form': form})
+        
+    context = {'form': form, 'transaction': transaction}
+    context.update(get_category_context(request.user))
+    return render(request, 'transactions/edit.html', context)
 
 @login_required
 def delete_transaction(request, pk):

@@ -26,17 +26,7 @@
   --sidebar-width: 260px;
 }
 
-[data-theme="dark"] {
-  --primary: #6366f1;
-  --primary-hover: #818cf8;
-  --bg-body: #111827;
-  --bg-glass: rgba(31, 41, 55, 0.7);
-  --bg-glass-sidebar: rgba(17, 24, 39, 0.95);
-  --text-main: #f9fafb;
-  --text-muted: #9ca3af;
-  --border-glass: rgba(255, 255, 255, 0.1);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-}
+
 
 * {
   box-sizing: border-box;
@@ -280,6 +270,10 @@ a:hover {
 }
 
 /* Utilities */
+.text-main {
+  color: var(--text-main) !important;
+}
+
 .text-gradient {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;

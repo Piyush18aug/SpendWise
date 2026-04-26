@@ -1,6 +1,28 @@
 {% extends 'base.html' %} 
-{% block title %}Add Transaction - SpendWise{% endblock %} 
+{% block title %}Add Transaction - SpendWiseWeb{% endblock %} 
 {% block content %}
+<style>
+  #category-autocomplete {
+    z-index: 1050;
+    max-height: 200px;
+    overflow-y: auto;
+    top: 100%;
+    left: 0;
+    border-radius: 12px;
+    border: none;
+    margin-top: 5px;
+  }
+  .category-chip {
+    transition: all 0.2s ease;
+  }
+  .category-chip:hover {
+    transform: translateY(-2px);
+  }
+  .list-group-item-action:hover {
+    background-color: var(--primary-light);
+    color: var(--primary-color);
+  }
+</style>
 <div class="row justify-content-center">
   <div class="col-md-8 col-lg-6">
     <div class="glass-card animate-fade-in">
@@ -16,11 +38,17 @@
         {% endif %}
         
         {% for field in form %}
-        <div class="mb-3">
+        <div class="mb-3 {% if field.name == 'category' %}position-relative{% endif %}">
           <label class="form-label text-muted small fw-bold"
             >{{ field.label }}</label
           >
-          {{ field }} {% if field.help_text %}
+          {{ field }} 
+          {% if field.name == 'category' %}
+            <div id="category-autocomplete" class="list-group shadow-lg position-absolute w-100" style="display: none;"></div>
+            <div id="smart-categories" class="mt-3"></div>
+            <small class="text-muted"><i class="fa-solid fa-keyboard ms-1"></i> You can type a custom category or click a suggestion above.</small>
+          {% endif %}
+          {% if field.help_text %}
           <small class="form-text text-muted">{{ field.help_text }}</small>
           {% endif %} {% for error in field.errors %}
           <div class="text-danger small">{{ error }}</div>
@@ -40,9 +68,172 @@
     </div>
   </div>
 </div>
+<script id="categories-data" type="application/json">{{ categories_json|safe }}</script>
+<script id="frequent-categories-data" type="application/json">{{ frequent_categories_json|safe }}</script>
+<script id="recent-categories-data" type="application/json">{{ recent_categories_json|safe }}</script>
+
 <script>
   document.querySelectorAll("input, select, textarea").forEach((input) => {
     input.classList.add("form-control-modern");
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const categoriesData = JSON.parse(document.getElementById('categories-data').textContent);
+    const frequentCategories = JSON.parse(document.getElementById('frequent-categories-data').textContent);
+    const recentCategories = JSON.parse(document.getElementById('recent-categories-data').textContent);
+    
+    const typeSelect = document.querySelector('select[name="type"]');
+    const categoryInput = document.querySelector('input[name="category"]');
+    const smartCategoriesContainer = document.getElementById('smart-categories');
+    const autocompleteContainer = document.getElementById('category-autocomplete');
+    
+    if(!typeSelect || !categoryInput || !smartCategoriesContainer) return;
+
+    // Set placeholder to guide user
+    categoryInput.placeholder = "E.g., Groceries, Salary, or type custom...";
+
+    function renderCategories() {
+      const selectedType = typeSelect.value || 'Expense';
+      smartCategoriesContainer.innerHTML = '';
+      
+      let html = '';
+      
+      // Top 3 Frequent Categories for this type
+      const frequentForType = frequentCategories.filter(c => c.type === selectedType).slice(0, 3);
+      
+      if(frequentForType.length > 0) {
+        html += '<div class="mb-3"><span class="small text-muted fw-bold d-block mb-2"><i class="fa-solid fa-star text-warning"></i> Frequent & Recent</span><div class="d-flex flex-wrap gap-2">';
+        frequentForType.forEach(cat => {
+            html += `<button type="button" class="btn btn-sm btn-outline-primary rounded-pill category-chip">${cat.category}</button>`;
+        });
+        
+        // Add distinct recent categories not in frequent
+        const frequentNames = frequentForType.map(c => c.category);
+        const recentForType = recentCategories.filter(c => c.type === selectedType && !frequentNames.includes(c.category)).slice(0, 2);
+        recentForType.forEach(cat => {
+            html += `<button type="button" class="btn btn-sm btn-outline-info rounded-pill category-chip">${cat.category}</button>`;
+        });
+        
+        html += '</div></div>';
+      }
+
+      // Predefined Categories
+      const groups = categoriesData[selectedType];
+      
+      if (groups) {
+          const firstGroupName = Object.keys(groups)[0];
+          const firstGroupItems = groups[firstGroupName];
+          
+          html += `<div class="mb-3"><span class="small text-muted fw-bold d-block mb-2"><i class="fa-solid fa-lightbulb text-info"></i> Suggestions (${firstGroupName})</span><div class="d-flex flex-wrap gap-2">`;
+          firstGroupItems.forEach(item => {
+              html += `<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill category-chip">${item}</button>`;
+          });
+          html += '</div></div>';
+          
+          const otherGroupNames = Object.keys(groups).slice(1);
+          if (otherGroupNames.length > 0) {
+              html += `<div class="mt-2"><button class="btn btn-sm btn-link text-decoration-none p-0" type="button" data-bs-toggle="collapse" data-bs-target="#moreCategories" aria-expanded="false" aria-controls="moreCategories">View all categories <i class="fa-solid fa-chevron-down"></i></button></div>`;
+              html += `<div class="collapse mt-3" id="moreCategories"><div class="card card-body bg-light border-0 shadow-sm">`;
+              
+              otherGroupNames.forEach((groupName, i) => {
+                  html += `<span class="small text-muted fw-bold d-block mb-2 ${i > 0 ? 'mt-3' : ''}">${groupName}</span><div class="d-flex flex-wrap gap-2">`;
+                  groups[groupName].forEach(item => {
+                      html += `<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill category-chip">${item}</button>`;
+                  });
+                  html += '</div>';
+              });
+              
+              html += `</div></div>`;
+          }
+      }
+      
+      smartCategoriesContainer.innerHTML = html;
+      
+      document.querySelectorAll('.category-chip').forEach(btn => {
+          btn.addEventListener('click', function() {
+              categoryInput.value = this.textContent;
+              updateChipHighlights();
+          });
+      });
+      
+      updateChipHighlights();
+    }
+    
+    function updateChipHighlights() {
+        document.querySelectorAll('.category-chip').forEach(b => {
+            if(b.textContent === categoryInput.value) {
+                b.classList.remove('btn-outline-primary', 'btn-outline-secondary', 'btn-outline-info');
+                b.classList.add('btn-primary', 'text-white');
+            } else {
+                b.classList.remove('btn-primary', 'text-white');
+                if(!b.classList.contains('btn-outline-primary') && !b.classList.contains('btn-outline-secondary') && !b.classList.contains('btn-outline-info')) {
+                    b.classList.add('btn-outline-secondary'); 
+                }
+            }
+        });
+    }
+
+    // Autocomplete logic
+    categoryInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        if (!query) {
+            autocompleteContainer.style.display = 'none';
+            return;
+        }
+
+        const selectedType = typeSelect.value || 'Expense';
+        const allCategories = [];
+        
+        // Collect all possible categories for this type
+        const groups = categoriesData[selectedType];
+        for (const group in groups) {
+            allCategories.push(...groups[group]);
+        }
+        
+        frequentCategories.filter(c => c.type === selectedType).forEach(c => {
+            if (!allCategories.includes(c.category)) allCategories.push(c.category);
+        });
+        recentCategories.filter(c => c.type === selectedType).forEach(c => {
+            if (!allCategories.includes(c.category)) allCategories.push(c.category);
+        });
+
+        const filtered = allCategories.filter(cat => cat.toLowerCase().includes(query));
+
+        if (filtered.length > 0) {
+            autocompleteContainer.innerHTML = '';
+            filtered.slice(0, 5).forEach(cat => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'list-group-item list-group-item-action small py-2 d-flex justify-content-between align-items-center';
+                item.innerHTML = `<span>${cat}</span><i class="fa-solid fa-plus-circle text-muted small"></i>`;
+                item.addEventListener('click', () => {
+                    categoryInput.value = cat;
+                    autocompleteContainer.style.display = 'none';
+                    updateChipHighlights();
+                });
+                autocompleteContainer.appendChild(item);
+            });
+            autocompleteContainer.style.display = 'block';
+        } else {
+            autocompleteContainer.style.display = 'none';
+        }
+    });
+
+    // Hide autocomplete when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!categoryInput.contains(e.target) && !autocompleteContainer.contains(e.target)) {
+            autocompleteContainer.style.display = 'none';
+        }
+    });
+    
+    renderCategories();
+    
+    typeSelect.addEventListener('change', function() {
+        categoryInput.value = ''; 
+        renderCategories();
+    });
+    
+    categoryInput.addEventListener('input', updateChipHighlights);
   });
 </script>
 {% endblock %}

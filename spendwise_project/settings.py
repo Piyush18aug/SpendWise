@@ -158,4 +158,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'apikey'
 EMAIL_HOST_PASSWORD = os.getenv("SENDGRID_API_KEY")
 DEFAULT_FROM_EMAIL = 'spendwiseweb@gmail.com'
-EMAIL_FROM_NAME = 'SpendWise Team'
+EMAIL_FROM_NAME = 'SpendWiseWeb Team'

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Profile - SpendWise{% endblock %}
+{% block title %}Profile - SpendWiseWeb{% endblock %}
 {% block header_title %}User Profile{% endblock %}
 
 {% block content %}
@@ -112,19 +112,9 @@
     .bg-soft-primary {
         background-color: rgba(13, 110, 253, 0.1);
     }
-    .form-control, .form-select {
-        border-radius: 10px;
-        padding: 0.6rem 1rem;
-        border: 1px solid #e0e0e0;
-        background-color: rgba(255, 255, 255, 0.5);
-    }
-    .form-control:focus, .form-select:focus {
-        background-color: #fff;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-    }
     .nav-pills .nav-link {
         border-radius: 50px;
-        color: #6c757d;
+        color: var(--text-muted);
         padding: 0.5rem 1.5rem;
         font-weight: 500;
         margin-right: 0.5rem;
@@ -141,4 +131,13 @@
         to { opacity: 1; transform: translateY(0); }
     }
 </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("input.form-control, select.form-select, textarea.form-control").forEach(el => {
+            el.classList.add("form-control-modern");
+            el.classList.remove("form-control", "form-select");
+        });
+    });
+</script>
 {% endblock %}
