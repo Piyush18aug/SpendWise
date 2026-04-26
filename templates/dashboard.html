@@ -2,83 +2,86 @@
 {% block header_title %}Financial Dashboard{% endblock %} {% block content %}
 
 <!-- Intelligence Banner -->
-<div class="glass-card mb-4 p-3 d-flex align-items-center justify-content-between">
-  <div class="d-flex align-items-center gap-4">
-    <div class="text-center" style="min-width: 80px;">
-      <h6 class="mb-0" style="color: var(--text-muted); font-weight: 700; letter-spacing: 1px; font-size: 0.8rem;">HEALTH</h6>
-      <h2 class="mb-0" style="color: #0ea5e9;">{{ health_percent }}%</h2>
+<div class="glass-card mb-4 p-3 overflow-hidden">
+  <div class="row align-items-center g-3">
+    <div class="col-12 col-md-8 col-lg-9">
+      <div class="d-flex align-items-center gap-3 gap-md-4">
+        <div class="text-center" style="min-width: 70px;">
+          <h6 class="mb-0" style="color: var(--text-muted); font-weight: 700; letter-spacing: 1px; font-size: 0.7rem;">HEALTH</h6>
+          <h2 class="mb-0" style="color: #0ea5e9; font-size: 1.5rem;">{{ health_percent }}%</h2>
+        </div>
+        <div style="border-left: 1px solid var(--border-glass); height: 40px;"></div>
+        <div class="d-flex align-items-center gap-3">
+          {% if health_percent < 50 %}
+          <div class="bg-danger bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+            <i class="fa-solid fa-triangle-exclamation text-danger" style="font-size: 0.9rem;"></i>
+          </div>
+          {% else %}
+          <div class="bg-success bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; min-width: 32px;">
+            <i class="fa-solid fa-check text-success" style="font-size: 0.9rem;"></i>
+          </div>
+          {% endif %}
+          <div>
+            <h6 class="mb-0 fw-bold" style="font-size: 0.95rem;">SpendWiseWeb Intelligence</h6>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">
+                {% if total_expenses > total_income %}
+                    Warning: Over 100% of income!
+                {% elif health_percent < 20 %}
+                    Warning: Over 80% of income!
+                {% elif health_percent < 50 %}
+                    Notice: Over 50% of income.
+                {% else %}
+                    Good: Spending is healthy.
+                {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div style="border-left: 1px solid var(--border-glass); height: 40px;"></div>
-    <div class="d-flex align-items-center gap-3">
-      {% if health_percent < 50 %}
-      <div class="bg-danger bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-        <i class="fa-solid fa-triangle-exclamation text-danger" style="font-size: 0.9rem;"></i>
-      </div>
-      {% else %}
-      <div class="bg-success bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-        <i class="fa-solid fa-check text-success" style="font-size: 0.9rem;"></i>
-      </div>
-      {% endif %}
-      <div>
-        <h6 class="mb-0 fw-bold">SpendWiseWeb Intelligence</h6>
-        <span style="color: var(--text-muted); font-size: 0.9rem;">
-            {% if total_expenses > total_income %}
-                Warning: You have spent over 100% of your income!
-            {% elif health_percent < 20 %}
-                Warning: You've spent over 80% of your income!
-            {% elif health_percent < 50 %}
-                Notice: You've spent over 50% of your income.
-            {% else %}
-                Good: Your spending is healthy relative to your income.
-            {% endif %}
-        </span>
-      </div>
+    <div class="col-12 col-md-4 col-lg-3 text-md-end">
+      <a href="{% url 'spending_awareness' %}" class="btn btn-primary w-100" style="background-color: #3b82f6; border-color: #3b82f6; border-radius: 8px; font-weight: 600; padding: 10px 20px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+        DEEP AWARENESS <i class="fa-solid fa-chevron-right ms-2" style="font-size: 0.8rem;"></i>
+      </a>
     </div>
   </div>
-  <a href="{% url 'spending_awareness' %}" class="btn btn-primary" style="background-color: #3b82f6; border-color: #3b82f6; border-radius: 8px; font-weight: 600; padding: 8px 20px;">
-    DEEP AWARENESS <i class="fa-solid fa-chevron-right ms-2" style="font-size: 0.8rem;"></i>
-  </a>
 </div>
 <!-- Summary Cards -->
-<div class="row mb-4">
-  <div class="col-md-4">
+<div class="row g-3 mb-4">
+  <div class="col-12 col-md-4">
     <div class="glass-card h-100 text-white" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none;">
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <p class="mb-1" style="opacity: 0.9; font-weight: 500;">Total Balance</p>
           <h2 class="fw-bold mb-0 text-white">{{ user.profile.currency_symbol }}{{ balance }}</h2>
         </div>
-        <div class="p-3 bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 54px; height: 54px;">
-          <i class="fa-solid fa-wallet fa-xl text-white"></i>
-        </div>
-      </div>
-      <div class="mt-4 pt-2">
-        <span class="badge bg-white bg-opacity-25 py-2 px-3">+12% this month</span>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-4">
-    <div class="glass-card h-100">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <p class="mb-1" style="color: var(--text-muted); font-weight: 500;">Total Income</p>
-          <h3 class="fw-bold text-success mb-0">+{{ user.profile.currency_symbol }}{{ total_income }}</h3>
-        </div>
-        <div class="p-3 bg-success bg-opacity-10 rounded-circle text-success d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-          <i class="fa-solid fa-arrow-trend-up fa-lg"></i>
+        <div class="p-3 bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+          <i class="fa-solid fa-wallet fa-lg text-white"></i>
         </div>
       </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="glass-card h-100">
+  <div class="col-6 col-md-4">
+    <div class="glass-card h-100 p-3 p-md-4">
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <p class="mb-1" style="color: var(--text-muted); font-weight: 500;">Total Expenses</p>
-          <h3 class="fw-bold text-danger mb-0">-{{ user.profile.currency_symbol }}{{ total_expenses }}</h3>
+          <p class="mb-1" style="color: var(--text-muted); font-weight: 500; font-size: 0.85rem;">Income</p>
+          <h4 class="fw-bold text-success mb-0">+{{ user.profile.currency_symbol }}{{ total_income }}</h4>
         </div>
-        <div class="p-3 bg-danger bg-opacity-10 rounded-circle text-danger d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-          <i class="fa-solid fa-arrow-trend-down fa-lg"></i>
+        <div class="p-2 bg-success bg-opacity-10 rounded-circle text-success d-none d-sm-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+          <i class="fa-solid fa-arrow-up fa-sm"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="glass-card h-100 p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <p class="mb-1" style="color: var(--text-muted); font-weight: 500; font-size: 0.85rem;">Expenses</p>
+          <h4 class="fw-bold text-danger mb-0">-{{ user.profile.currency_symbol }}{{ total_expenses }}</h4>
+        </div>
+        <div class="p-2 bg-danger bg-opacity-10 rounded-circle text-danger d-none d-sm-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+          <i class="fa-solid fa-arrow-down fa-sm"></i>
         </div>
       </div>
     </div>
@@ -90,7 +93,7 @@
   <div class="col-md-8">
     <div class="glass-card h-100">
       <h5 class="mb-4">Income vs Expenses</h5>
-      <div style="position: relative; height: 300px">
+      <div style="position: relative; height: 300px; width: 100%;">
         <canvas id="incomeExpenseChart"></canvas>
       </div>
     </div>
@@ -98,7 +101,7 @@
   <div class="col-md-4">
     <div class="glass-card h-100">
       <h5 class="mb-4">Spending by Category</h5>
-      <div style="position: relative; height: 300px">
+      <div style="position: relative; height: 300px; width: 100%;">
         <canvas id="categoryChart"></canvas>
       </div>
     </div>
@@ -129,25 +132,25 @@
               <th>Category</th>
               <th>Note</th>
               <th>Amount</th>
-              <th>Status</th>
+              <th>Type</th>
             </tr>
           </thead>
           <tbody>
             {% if transactions %} {% for t in transactions %}
             <tr>
-              <td>{{ t.date }}</td>
-              <td>
+              <td data-label="Date">{{ t.date }}</td>
+              <td data-label="Category">
                 <span class="d-flex align-items-center gap-2">
                   <i class="fa-solid fa-tag text-muted"></i> {{ t.category }}
                 </span>
               </td>
-              <td>{{ t.notes|default:"-" }}</td>
-              <td
+              <td data-label="Note">{{ t.notes|default:"-" }}</td>
+              <td data-label="Amount"
                 class="fw-bold {% if t.type == 'Income' %}text-success{% else %}text-danger{% endif %}"
               >
                 {% if t.type == 'Income' %}+{% else %}-{% endif %}{{ user.profile.currency_symbol }}{{ t.amount }}
               </td>
-              <td>
+              <td data-label="Type">
                 <span
                   class="badge-modern {% if t.type == 'Income' %}badge-success{% else %}badge-danger{% endif %}"
                 >
@@ -157,8 +160,16 @@
             </tr>
             {% endfor %} {% else %}
             <tr>
-              <td colspan="5" class="text-center text-muted py-4">
-                No recent transactions
+              <td colspan="5" class="text-center py-5">
+                <div class="d-flex flex-column align-items-center gap-3">
+                  <div class="p-4 bg-light rounded-circle">
+                    <i class="fa-solid fa-receipt fa-3x text-muted opacity-25"></i>
+                  </div>
+                  <h6 class="text-muted m-0">No transactions yet</h6>
+                  <a href="{% url 'add_transaction' %}" class="btn btn-sm btn-primary-modern">
+                    <i class="fa-solid fa-plus me-1"></i> Add your first expense
+                  </a>
+                </div>
               </td>
             </tr>
             {% endif %}
@@ -223,9 +234,22 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-              legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+              legend: { 
+                  position: window.innerWidth < 768 ? 'bottom' : 'right', 
+                  labels: { 
+                      usePointStyle: true, 
+                      padding: window.innerWidth < 768 ? 10 : 20,
+                      font: { size: window.innerWidth < 768 ? 10 : 12 }
+                  },
+                  display: window.innerWidth < 480 ? false : true
+              },
+              tooltip: {
+                padding: 12,
+                cornerRadius: 8,
+                backgroundColor: 'rgba(31, 41, 55, 0.9)'
+              }
           },
-          cutout: '70%'
+          cutout: window.innerWidth < 768 ? '60%' : '75%'
       }
   });
 </script>

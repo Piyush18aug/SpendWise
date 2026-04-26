@@ -1,23 +1,25 @@
 {% extends 'base.html' %}
 {% block title %}Transactions{% endblock %}
 {% block content %}
-<div class="row mb-4">
-  <div class="col-md-6">
-    <h2>Transactions</h2>
+<div class="row mb-4 align-items-center g-3">
+  <div class="col-12 col-md-6">
+    <h2 class="m-0 fw-bold">Transactions</h2>
+    <p class="text-muted small m-0">History of your income and expenses</p>
   </div>
-  <div class="col-md-6 text-end">
-    <a href="{% url 'add_transaction' %}" class="btn btn-success"
-      >Add Transaction</a
-    >
+  <div class="col-12 col-md-6 text-md-end">
+    <a href="{% url 'add_transaction' %}" class="btn btn-primary-modern w-100 w-md-auto">
+      <i class="fa-solid fa-plus me-2"></i> Add Transaction
+    </a>
   </div>
 </div>
 
+
 <div class="glass-card mb-4 p-3 border-0" style="background: var(--bg-glass-sidebar);">
-  <form method="GET" class="row gx-3 align-items-center">
-    <div class="col-md-auto">
+  <form method="GET" class="row gx-3 gy-2 align-items-center">
+    <div class="col-12 col-md-auto">
       <h6 class="mb-0 fw-bold"><i class="fa-solid fa-filter me-2" style="color: var(--primary);"></i>Filter:</h6>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <select name="year" class="form-control-modern form-select pointer" style="padding: 10px; cursor: pointer;">
         <option value="">All Years</option>
         <option value="2023" {% if selected_year == '2023' %}selected{% endif %}>2023</option>
@@ -27,7 +29,7 @@
         <option value="2027" {% if selected_year == '2027' %}selected{% endif %}>2027</option>
       </select>
     </div>
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
       <select name="month" class="form-control-modern form-select" style="padding: 10px; cursor: pointer;">
         <option value="">All Months</option>
         <option value="1" {% if selected_month == '1' %}selected{% endif %}>January</option>
@@ -44,12 +46,13 @@
         <option value="12" {% if selected_month == '12' %}selected{% endif %}>December</option>
       </select>
     </div>
-    <div class="col-md-auto d-flex gap-2">
-      <button type="submit" class="btn btn-primary-modern px-4" style="padding: 10px 24px;">Apply</button>
-      <a href="{% url 'transaction_list' %}" class="btn btn-outline-modern px-4" style="padding: 10px 24px;">Clear</a>
+    <div class="col-12 col-md-auto d-flex gap-2">
+      <button type="submit" class="btn btn-primary-modern flex-grow-1 px-4" style="padding: 10px 24px;">Apply</button>
+      <a href="{% url 'transaction_list' %}" class="btn btn-outline-modern flex-grow-1 px-4" style="padding: 10px 24px;">Clear</a>
     </div>
   </form>
 </div>
+
 
 <div class="glass-card">
   <div class="table-responsive">
@@ -67,39 +70,55 @@
       <tbody>
         {% for transaction in transactions %}
         <tr>
-          <td>{{ transaction.date }}</td>
-          <td>
+          <td data-label="Date">{{ transaction.date }}</td>
+          <td data-label="Type">
             <span
-              class="badge {% if transaction.type == 'Income' %}bg-success{% else %}bg-danger{% endif %}"
+              class="badge-modern {% if transaction.type == 'Income' %}badge-success{% else %}badge-danger{% endif %}"
             >
               {{ transaction.type }}
             </span>
           </td>
-          <td>{{ transaction.category }}</td>
-          <td>{{ user.profile.currency_symbol }}{{ transaction.amount }}</td>
-          <td>{{ transaction.notes }}</td>
-          <td>
-            <a
-              href="{% url 'edit_transaction' transaction.pk %}"
-              class="btn btn-sm btn-primary"
-              >Edit</a
-            >
-            <form
-              method="post"
-              action="{% url 'delete_transaction' transaction.pk %}"
-              class="d-inline"
-              onsubmit="return confirm('Are you sure?');"
-            >
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-danger">
-                Delete
-              </button>
-            </form>
+          <td data-label="Category">
+             <span class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-tag text-muted"></i> {{ transaction.category }}
+             </span>
+          </td>
+          <td data-label="Amount" class="fw-bold {% if transaction.type == 'Income' %}text-success{% else %}text-danger{% endif %}">
+            {% if transaction.type == 'Income' %}+{% else %}-{% endif %}{{ user.profile.currency_symbol }}{{ transaction.amount }}
+          </td>
+          <td data-label="Notes" class="text-muted small">{{ transaction.notes|default:"-" }}</td>
+          <td data-label="Actions">
+            <div class="d-flex gap-2">
+              <a
+                href="{% url 'edit_transaction' transaction.pk %}"
+                class="btn btn-sm btn-outline-primary"
+                title="Edit"
+                ><i class="fa-solid fa-pen-to-square"></i></a
+              >
+              <form
+                method="post"
+                action="{% url 'delete_transaction' transaction.pk %}"
+                class="d-inline"
+                onsubmit="return confirm('Are you sure you want to delete this transaction?');"
+              >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </form>
+            </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="6" class="text-center">No transactions found.</td>
+          <td colspan="6" class="text-center py-5">
+             <div class="d-flex flex-column align-items-center gap-3">
+               <div class="p-4 bg-light rounded-circle">
+                 <i class="fa-solid fa-receipt fa-3x text-muted opacity-25"></i>
+               </div>
+               <h6 class="text-muted m-0">No transactions found for this period.</h6>
+             </div>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -107,25 +126,27 @@
   </div>
 </div>
 
-<div class="row mt-4">
-  <div class="col-md-4 mb-3">
+
+<div class="row mt-4 g-3">
+  <div class="col-12 col-md-4">
     <div class="glass-card text-center py-3" style="border-bottom: 4px solid var(--success);">
       <h6 class="mb-1 fw-bold" style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Period Income</h6>
       <h3 class="mb-0 text-success fw-bold">+{{ user.profile.currency_symbol }}{{ filtered_income }}</h3>
     </div>
   </div>
-  <div class="col-md-4 mb-3">
+  <div class="col-12 col-md-4">
     <div class="glass-card text-center py-3" style="border-bottom: 4px solid var(--danger);">
       <h6 class="mb-1 fw-bold" style="color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Period Expense</h6>
       <h3 class="mb-0 text-danger fw-bold">-{{ user.profile.currency_symbol }}{{ filtered_expense }}</h3>
     </div>
   </div>
-  <div class="col-md-4 mb-3">
+  <div class="col-12 col-md-4">
     <div class="glass-card text-center py-3 text-white" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); border: none;">
       <h6 class="mb-1 fw-bold" style="opacity: 0.9; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Period Net Total</h6>
       <h3 class="mb-0 fw-bold">{% if filtered_balance > 0 %}+{% endif %}{{ user.profile.currency_symbol }}{{ filtered_balance }}</h3>
     </div>
   </div>
 </div>
+
 
 {% endblock %}
